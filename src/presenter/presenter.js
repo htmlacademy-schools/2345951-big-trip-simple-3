@@ -4,6 +4,7 @@ import EventItemView from '../view/event-item-view';
 
 import { render } from '../render';
 import NewItemFormView from '../View/create-form-view';
+import NoPointsView from '../View/no-points-view';
 
 export default class Presenter {
   #container = null;
@@ -21,7 +22,9 @@ export default class Presenter {
 
     render(new SortView(), this.#container);
     render(this.#tripListComponent, this.#container);
-
+    if (this.#tripPoints.length === 0) {
+      render(new NoPointsView(), this.#container);
+    }
     for (let i = 0; i < this.#tripPoints.length; i++) {
       this.#renderTripPoint(this.#tripPoints[i]);
     }
