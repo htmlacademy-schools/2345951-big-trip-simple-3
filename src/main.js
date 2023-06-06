@@ -4,10 +4,10 @@ import {render} from './render';
 import TripPointModel from './model/model';
 
 const filters = document.querySelector('.trip-controls__filters');
-render(new FiltersView(), filters);
-
 const container = document.querySelector('.trip-events');
 const tripPointsModel = new TripPointModel();
-const presenter = new Presenter(tripPointsModel);
+const presenter = new Presenter(container, tripPointsModel);
 
-presenter.init(container);
+render(new FiltersView(), filters);
+
+presenter.init();

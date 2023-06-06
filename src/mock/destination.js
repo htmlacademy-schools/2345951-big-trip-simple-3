@@ -10,7 +10,7 @@ export const generateDestination = (id) => ({
     Array.from({length: getRandomInt(2, 10)}, generatePicture)
 });
 
-export const randomDestinations = () => {
+export const randomDestinations = (() => {
   const destinations = [];
 
   for (let i = 0; i <= 10; i++) {
@@ -21,4 +21,4 @@ export const randomDestinations = () => {
     getDestination: (id) => destinations[id],
     getAllDestinations: () => destinations,
   };
-};
+})();

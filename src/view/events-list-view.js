@@ -1,19 +1,34 @@
-import {createElement} from '../render.js';
+import {createElement, render} from '../render.js';
 
-function createEventListTemplate() {
-  return '<ul class="trip-events__list"></ul>';
-}
+const createEventListTemplate = () =>
+  '<ul class="trip-events__list"></ul>';
+
+const createElementWrapperTemplate = () => `
+  <li class="trip-events__item"></li>
+`;
 
 export default class EventListView {
-  getTemplate() {
+
+  #element = null;
+
+  get template() {
     return createEventListTemplate();
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  addComponent(component) {
+    const listElement = createElement(createElementWrapperTemplate());
+    render(component, listElement);
+    this.element.append(listElement);
+  }
 
-    return this.element;
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
+    }
+    return this.#element;
+  }
+
+  removeElement() {
+    this.#element = null;
   }
 }
