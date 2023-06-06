@@ -6,7 +6,7 @@ const FORM_DATE_FORMAT = 'DD/MM/YY';
 
 export const convertToEventDateTime = (date) => date.substring(0, date.indexOf('T'));
 export const convertToEventDate = (date) => dayjs(date).format(EVENT_DATE_FORMAT);
-export const convertToDateTime = (date) => date.substring(0, date.indexOf('.'));
+export const convertToDateTime = (date) => date.substring(0, date.indexOf(':'));
 export const convertToTime = (date) => dayjs(date).format(TIME_FORMAT);
 export const convertToUpperCase = (type) => type.charAt(0).toUpperCase() + type.slice(1);
 export const convertToFormDate = (date) => dayjs(date).format(FORM_DATE_FORMAT);
@@ -37,3 +37,5 @@ export const generatePicture = () => ({
   src: getRandomImageUrl(),
   description: DESCRIPTIONS[getRandomInt(0, DESCRIPTIONS.length - 1)]
 });
+
+export const isTripDateBeforeToday = (date) => dayjs(date).isBefore(dayjs(), 'D') || dayjs(date).isSame(dayjs(), 'D');

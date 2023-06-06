@@ -1,6 +1,6 @@
-import {createElement} from '../render';
 import {randomDestinations} from '../mock/destination';
 import {convertToFormDate, convertToTime} from '../utils/util';
+import AbstractView from '../framework/view/abstract-view';
 
 const createPhotosTemplate = (photos) => photos.map((photo) => `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join('');
 
@@ -171,26 +171,15 @@ const createEventItemFormTemplate = (eventPoint = {}) => {
               </form>`;
 };
 
-export default class NewItemFormView {
+export default class NewItemFormView extends AbstractView {
 
-  #element = null;
-
-  constructor({tripPoint}) {
-    this.tripPoint = tripPoint;
+  #tripPoint = null;
+  constructor(tripPoint) {
+    super();
+    this.#tripPoint = tripPoint;
   }
 
   get template() {
-    return createEventItemFormTemplate(this.tripPoint);
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
+    return createEventItemFormTemplate(this.#tripPoint);
   }
 }

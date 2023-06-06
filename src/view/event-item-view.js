@@ -1,7 +1,7 @@
-import {createElement} from '../render';
 import {convertToDateTime, convertToEventDate, convertToEventDateTime, convertToTime} from '../utils/util';
 import {getRandomOffers} from '../mock/offers';
 import {randomDestinations} from '../mock/destination';
+import AbstractView from '../framework/view/abstract-view';
 
 
 const createOffersTemplate = (offers) => offers.map((offer) =>
@@ -53,26 +53,26 @@ const createEvenItemTemplate = (eventPoint) => {
             </li>`;
 };
 
-export default class EventItemView {
+export default class EventItemView extends AbstractView {
 
-  #element = null;
+  #tripPoint = null;
+  #handleEditClick = null;
 
-  constructor({tripPoint}) {
-    this.tripPoint = tripPoint;
+  constructor({tripPoint, onEditClick}) {
+    super();
+    this.#tripPoint = tripPoint;
+    this.#handleEditClick = onEditClick;
+
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#editClickHandler);
   }
 
   get template() {
-    return createEvenItemTemplate(this.tripPoint);
+    return createEvenItemTemplate(this.#tripPoint);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 }
