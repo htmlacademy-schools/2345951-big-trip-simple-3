@@ -3,18 +3,20 @@ import EventListView from '../view/events-list-view';
 import EventItemView from '../view/event-item-view';
 
 import {render, replace} from '../framework/render.js';
-import NewItemFormView from '../view/create-form-view';
-import NoPointsView from '../view/no-points-view';
+import NewItemFormView from '../View/create-form-view';
+import NoPointsView from '../View/no-points-view';
 import EditPointView from '../View/edit-point-view';
 
 export default class Presenter {
   #container = null;
   #tripPointsModel = null;
   #tripListComponent = null;
+  #sorters = null;
 
-  constructor({container, tripPointsModel}) { //NEW PULL
+  constructor({container, tripPointsModel, sorters}) {
     this.#tripPointsModel = tripPointsModel;
     this.#container = container;
+    this.#sorters = sorters;
   }
 
   init() {
@@ -24,7 +26,7 @@ export default class Presenter {
       render(new NoPointsView(), this.#container);
     } else {
       this.#tripListComponent = new EventListView();
-      render(new SortView(), this.#container);
+      render(new SortView(this.#sorters), this.#container);
       render(this.#tripListComponent, this.#container);
       render(new NewItemFormView(tripPoints[0]), this.#tripListComponent.element);
       for (let i = 1; i < tripPoints.length - 1; i++) {
