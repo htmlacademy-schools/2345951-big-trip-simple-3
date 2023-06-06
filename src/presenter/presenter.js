@@ -2,69 +2,68 @@ import SortView from '../view/sort-view';
 import EventListView from '../view/events-list-view';
 import EventItemView from '../view/event-item-view';
 
-import { render } from '../render';
-import NewItemFormView from '../View/create-form-view';
-import NoPointsView from '../View/no-points-view';
+import {render, replace} from '../framework/render.js';
+import NewItemFormView from '../view/create-form-view';
+import NoPointsView from '../view/no-points-view';
+import EditPointView from '../View/edit-point-view';
 
 export default class Presenter {
   #container = null;
   #tripPointsModel = null;
-  #tripListComponent = new EventListView();
-  #tripPoints = [];
+  #tripListComponent = null;
 
-  constructor(container, tripPointsModel) {
+  constructor({container, tripPointsModel}) { //NEW PULL
     this.#tripPointsModel = tripPointsModel;
     this.#container = container;
-    this.#tripPoints = [...this.#tripPointsModel.getTripPoints()];
   }
 
   init() {
 
-    render(new SortView(), this.#container);
-    render(this.#tripListComponent, this.#container);
-    if (this.#tripPoints.length === 0) {
+    const tripPoints = [...this.#tripPointsModel.getTripPoints()];
+    if (tripPoints.length === 0) {
       render(new NoPointsView(), this.#container);
-    }
-    for (let i = 0; i < this.#tripPoints.length; i++) {
-      this.#renderTripPoint(this.#tripPoints[i]);
+    } else {
+      this.#tripListComponent = new EventListView();
+      render(new SortView(), this.#container);
+      render(this.#tripListComponent, this.#container);
+      render(new NewItemFormView(tripPoints[0]), this.#tripListComponent.element);
+      for (let i = 1; i < tripPoints.length - 1; i++) {
+        this.#renderTripPoint(tripPoints[i]);
+      }
     }
   }
 
   #renderTripPoint = (tripPoint) => {
-    const tripPointComponent = new EventItemView({tripPoint});
-    const tripPointFormComponent = new NewItemFormView({tripPoint});
-
-    const replacePointToForm = () => {
-      this.#tripListComponent.element.replaceChild(tripPointFormComponent.element, tripPointComponent.element);
-    };
-
-    const replaceFormToPoint = () => {
-      this.#tripListComponent.element.replaceChild(tripPointComponent.element, tripPointFormComponent.element);
-    };
-
-    const closeEditFormOnEcsKey = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
+    const ecsKeyDownHandler = (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault();
         replaceFormToPoint();
-        document.body.removeEventListener('keydown', closeEditFormOnEcsKey);
+        document.body.removeEventListener('keydown', ecsKeyDownHandler);
       }
     };
 
-    tripPointComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
-      replacePointToForm();
-      document.body.addEventListener('keydown', closeEditFormOnEcsKey);
+    const tripPointComponent = new EventItemView({
+      tripPoint,
+      onEditClick: () => {
+        replacePointToForm.call(this);
+        document.body.addEventListener('keydown', ecsKeyDownHandler);
+      }});
+
+    const editFormComponent = new EditPointView({
+      tripPoint,
+      onFormSubmit: () => {
+        replaceFormToPoint.call(this);
+        document.body.removeEventListener('keydown', ecsKeyDownHandler);
+      }
     });
 
-    tripPointFormComponent.element.querySelector('.event__save-btn').addEventListener('click', (evt) => {
-      evt.preventDefault();
-      replaceFormToPoint();
-      document.body.removeEventListener('keydown', closeEditFormOnEcsKey);
-    });
+    function replacePointToForm() {
+      replace(editFormComponent, tripPointComponent);
+    }
 
-    tripPointFormComponent.element.querySelector('.event__reset-btn').addEventListener('click', () => {
-      replaceFormToPoint();
-      document.body.removeEventListener('keydown', closeEditFormOnEcsKey);
-    });
+    function replaceFormToPoint() {
+      replace(tripPointComponent, editFormComponent);
+    }
 
     render(tripPointComponent, this.#tripListComponent.element);
   };
