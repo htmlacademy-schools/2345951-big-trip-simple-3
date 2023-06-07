@@ -1,8 +1,8 @@
 import { capitalizeType, getItemFromItemsById } from '../utils/utils.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { convertToBasicime } from '../utils/formatTime-Utils.js';
-import { pointTypes } from '../mock/const.js';
-
+import { pointTypes } from '../const.js';
+import he from 'he';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
@@ -12,7 +12,7 @@ const BLANK_TRIPPOINT = {
   dateTo: '2019-07-18T21:40:13.375Z',
   destination: undefined,
   id: 0,
-  offersIDs: [2, 4],
+  offersIDs: [],
   type: 'flight'
 };
 
@@ -60,7 +60,7 @@ const createEventDetailsTemplate = (tripPoint, destination, offers) => {
 
   <section class="event__section  event__section--destination ${(destination) ? '' : 'visually-hidden'}">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${(destination) ? destination.description : ''}</p>
+    <p class="event__destination-description">${destination.description}</p>
     ${createDestinationDescriptionTemplate(destination)}
   </section>`;
 };
@@ -88,6 +88,9 @@ const createDestinationList = (destinations) => (destinations
 
 
 const createEditFormTemplate = (tripPoint, destinations, offers, isEditForm) => {
+  if (!tripPoint.destination) {
+    tripPoint.destination = destinations[0].id;
+  }
   const destination = getItemFromItemsById(destinations, tripPoint.destination);
   return (
     `<li class="trip-events__item">
@@ -112,7 +115,7 @@ const createEditFormTemplate = (tripPoint, destinations, offers, isEditForm) => 
         <label class="event__label event__type-output" for="event-destination-${tripPoint.id}">
         ${capitalizeType(tripPoint.type)}
         </label>
-        <input class="event__input event__input--destination" id="event-destination-${tripPoint.id}" type="text" name="event-destination" value="${(destination) ? destination.name : ''}" list="destination-list-${tripPoint.id}" autocomplete="off">
+        <input class="event__input event__input--destination" id="event-destination-${tripPoint.id}" type="text" name="event-destination" value="${he.encode(destination.name) }" list="destination-list-${tripPoint.id}" autocomplete="off">
         <datalist id="destination-list-${tripPoint.id}">
           ${createDestinationList(destinations)}
         </datalist>
@@ -131,7 +134,7 @@ const createEditFormTemplate = (tripPoint, destinations, offers, isEditForm) => 
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input event__input--price" id="event-price-${tripPoint.id}" type="number" name="event-price" value="${tripPoint.basePrice}">
+        <input class="event__input event__input--price" id="event-price-${tripPoint.id}" type="number" name="event-price" value="${tripPoint.basePrice}" autocomplete="off" min="0" max="9999999" >
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -213,6 +216,9 @@ export default class EditFormView extends AbstractStatefulView {
   }
 
   #fromDateChangeHandler = ([userDate]) => {
+    if (!userDate) {
+      return;
+    }
     this._setState({
       dateFrom: userDate.toISOString(),
     });
@@ -221,6 +227,9 @@ export default class EditFormView extends AbstractStatefulView {
 
 
   #toDateChangeHandler = ([userDate]) => {
+    if (!userDate) {
+      return;
+    }
     this._setState({
       dateTo: userDate.toISOString(),
     });
@@ -276,9 +285,13 @@ export default class EditFormView extends AbstractStatefulView {
   };
 
   #destinationHandler = (evt) => {
+    const newDest = this.#destinations.find((destination) => destination.name === evt.target.value);
+    if (!newDest) {
+      return;
+    }
     evt.preventDefault();
     this.updateElement({
-      destination: this.#destinations.find((destination) => destination.name === evt.target.value).id,
+      destination: newDest.id,
     });
   };
 
@@ -310,9 +323,9 @@ export default class EditFormView extends AbstractStatefulView {
   }
 
   static parseStateToTripPoint(state) {
-    const task = {...state};
+    const tripPoint = {...state};
 
-    delete task.currentTypeOffers;
-    return task;
+    delete tripPoint.currentTypeOffers;
+    return tripPoint;
   }
 }

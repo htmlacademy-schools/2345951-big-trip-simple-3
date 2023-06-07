@@ -2,6 +2,7 @@
 import { capitalizeType, getItemFromItemsById } from '../utils/utils.js';
 import { convertToEventDateTime, convertToEventDate, convertToDateTime, convertToTime } from '../utils/formatTime-Utils.js';
 import AbstractView from '../framework/view/abstract-view.js';
+import he from 'he';
 
 
 const createOffersTemplate = (offers, offersIDs, type) => {
@@ -24,7 +25,7 @@ const createTripPointTemplate = (tripPoint, destinations, offers) => {
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${tripPoint.type}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${capitalizeType(tripPoint.type)} ${destination.name}</h3>
+      <h3 class="event__title">${capitalizeType(tripPoint.type)} ${he.encode(destination.name)}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime="${convertToDateTime(tripPoint.dateFrom)}">${convertToTime(tripPoint.dateFrom)}</time>
