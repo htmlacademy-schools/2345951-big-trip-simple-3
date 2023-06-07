@@ -1,16 +1,27 @@
-import {getRandomDate, getRandomInt} from '../utils/util';
+import {getRandomItemFromItems, getRandomPrice, createIDgenerator} from '../utils/utils.js';
+import {fromToDates, pointTypes } from './const.js';
+import { destinations } from './destination.js';
+import { getRandomOffersIdsByType } from '../utils/offers.js';
 
+const tripPoints = [];
 
-const TRIP_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+const generateTripPointId = createIDgenerator();
+const generateTripPoints = (n) => {
+  for (let i = 0; i < n; i++) {
+    const dates = getRandomItemFromItems(fromToDates);
+    const type = getRandomItemFromItems(pointTypes);
+    const tripPoint = {
+      basePrice: getRandomPrice(),
+      dateFrom: dates.dateFrom,
+      dateTo: dates.dateTo,
+      destination: getRandomItemFromItems(destinations).id,
+      id: generateTripPointId(),
+      offersIDs: getRandomOffersIdsByType(type),
+      type
+    };
+    tripPoints.push(tripPoint);
+  }
+  return tripPoints;
+};
 
-export const getRandomType = () => TRIP_TYPES[getRandomInt(0, TRIP_TYPES.length - 1)];
-
-export const generateTripPoint = () => ({
-  'base_price': getRandomInt(500, 2000),
-  'date_from': getRandomDate(),
-  'date_to': getRandomDate(),
-  'destination': getRandomInt(0, 9),
-  'id': getRandomInt(0, 3),
-  'offers': [1, 3, 5],
-  'type': getRandomType()
-});
+export { tripPoints, generateTripPoints};
