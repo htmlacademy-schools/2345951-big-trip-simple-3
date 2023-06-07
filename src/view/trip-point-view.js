@@ -1,4 +1,3 @@
-
 import { capitalizeType, getItemFromItemsById } from '../utils/utils.js';
 import { convertToEventDateTime, convertToEventDate, convertToDateTime, convertToTime } from '../utils/formatTime-Utils.js';
 import AbstractView from '../framework/view/abstract-view.js';
