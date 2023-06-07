@@ -7,8 +7,8 @@ const Method = {
   DELETE: 'DELETE'
 };
 
-export default class TripPointApiService extends ApiService {
-  get tripPoints() {
+export default class WaypointsApiService extends ApiService {
+  get waypoints() {
     return this._load({url: 'points'})
       .then(ApiService.parseResponse);
   }
@@ -23,11 +23,11 @@ export default class TripPointApiService extends ApiService {
       .then(ApiService.parseResponse);
   }
 
-  async updateTripPoint(tripPoint) {
+  async updateWaypoint(waypoint) {
     const response = await this._load({
-      url: `points/${tripPoint.id}`,
+      url: `tasks/${waypoint.id}`,
       method: Method.PUT,
-      body: JSON.stringify(this.#adaptToServer(tripPoint)),
+      body: JSON.stringify(this.#adaptToServer(waypoint)),
       headers: new Headers({'Content-Type': 'application/json'}),
     });
 
@@ -36,18 +36,19 @@ export default class TripPointApiService extends ApiService {
     return parsedResponse;
   }
 
-  #adaptToServer(tripPoint) {
-    const adaptedTripPoint = {...tripPoint,
-      'date_from': new Date(tripPoint.dateFrom).toISOString(),
-      'date_to': new Date(tripPoint.dateTo).toISOString(),
-      'base_price': Number(tripPoint.basePrice),
-      'offers': tripPoint.offersIDs
+  #adaptToServer(waypoint) {
+    const adaptedWaypoint = {...waypoint,
+      'date_from': new Date(waypoint.dateFrom).toISOString(),
+      'date_to': new Date(waypoint.dateTo).toISOString(),
+      'base_price': Number(waypoint.basePrice),
+      'offers': waypoint.offersIDs
     };
 
-    delete adaptedTripPoint.dateFrom;
-    delete adaptedTripPoint.dateTo;
-    delete adaptedTripPoint.basePrice;
-    delete adaptedTripPoint.offersIDs;
-    return adaptedTripPoint;
+    delete adaptedWaypoint.dateFrom;
+    delete adaptedWaypoint.dateTo;
+    delete adaptedWaypoint.basePrice;
+    delete adaptedWaypoint.offersIDs;
+
+    return adaptedWaypoint;
   }
 }
