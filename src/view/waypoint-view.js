@@ -1,6 +1,6 @@
-import {getDateDayAndMo, getDateWithoutT, getDateWithT, getTime} from '../utils';
+import {getDateDayAndMo, getDateWithoutT, getDateWithT, getTime} from '../utils/utils';
 import AbstractView from '../framework/view/abstract-view';
-import { getItemFromItemsById } from '../utils';
+import { getItemFromItemsById } from '../utils/utils';
 import he from 'he';
 
 

@@ -1,8 +1,8 @@
 import {FilterType, FilterTypeDescriptions, UpdateType} from '../const';
-import Filters from '../view/filters';
+import Filters from '../view/filter-view';
 import {render} from '../render';
 import {remove, replace} from '../framework/render';
-import {filter} from '../utils';
+import {filter} from '../utils/utils';
 
 export default class FilterPresenter {
   #filterContainer = null;

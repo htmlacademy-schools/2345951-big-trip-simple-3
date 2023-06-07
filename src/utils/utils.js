@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {FilterType} from './const';
+import {FilterType} from '../const';
 
 const EVENT_DATE_FORMAT = 'MMM D';
 const EVENT_TIME_FORMAT = 'H:mm';

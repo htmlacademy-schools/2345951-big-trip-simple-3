@@ -1,6 +1,6 @@
 import AbstractView from '../framework/view/abstract-view';
 import {SortType, SortTypeDescription} from '../const';
-import {isSelectedOption} from '../sort';
+import {isSelectedOption} from '../utils/sort';
 
 function createSortItemTemplate(sortType, currentSortType) {
   return `
