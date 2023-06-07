@@ -1,4 +1,4 @@
-const SORT_TYPE = {
+export const SORT_TYPE = {
   DAY: 'day',
   EVENT: 'event',
   TIME: 'time',
@@ -9,9 +9,9 @@ const SORT_TYPE = {
 const sorts = {
   [SORT_TYPE.DAY]: () => (0),
   [SORT_TYPE.EVENT]: () => (0),
-  [SORT_TYPE.OFFERS]: () => (0),
-  [SORT_TYPE.PRICE]: () => (0),
   [SORT_TYPE.TIME]: () => (0),
+  [SORT_TYPE.PRICE]: () => (0),
+  [SORT_TYPE.OFFERS]: () => (0)
 };
 
 export const generateSort = () => Object.keys(sorts).map((sortName) => sortName);
