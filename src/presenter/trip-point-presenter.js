@@ -2,6 +2,8 @@ import { render, replace, remove } from '../framework/render';
 import TripPointView from '../view/trip-point-view';
 import EditFormView from '../view/edit-form-view';
 import { isEscapeKey } from '../utils/utils';
+import { UserAction, UpdateType } from '../const';
+import { isDatesEqual } from '../utils/formatTime-Utils';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -39,7 +41,7 @@ export default class TripPointPresenter {
       tripPoint: this.#tripPoint,
       destinations: this.#destinations,
       offers: this.#offers,
-      onEditClick: this.#handleEditClick
+      onEditClick: this.#handleEditClick,
     });
 
     this.#editFormComponent = new EditFormView({
@@ -47,7 +49,8 @@ export default class TripPointPresenter {
       destinations: this.#destinations,
       offers: this.#offers,
       onFormSubmit: this.#handleFormSubmit,
-      onRollUpButton: this.#handleRollupButtonClick
+      onRollUpButton: this.#handleRollupButtonClick,
+      onDeleteClick: this.#handleDeleteClick
     });
 
     if (prevTripPointComponent === null || prevEditFormComponent === null) {
@@ -88,6 +91,7 @@ export default class TripPointPresenter {
   #replaceFormToPoint = () => {
     replace(this.#tripPointComponent, this.#editFormComponent);
     this.#mode = Mode.DEFAULT;
+    document.body.removeEventListener('keydown', this.#ecsKeyDownHandler);
   };
 
   #ecsKeyDownHandler = (evt) => {
@@ -105,8 +109,13 @@ export default class TripPointPresenter {
     document.body.addEventListener('keydown', this.#ecsKeyDownHandler);
   };
 
-  #handleFormSubmit = (tripPoint) => {
-    this.#handleDataChange(tripPoint);
+  #handleFormSubmit = (update) => {
+    const isMinorUpdate = !isDatesEqual(this.#tripPoint.dateFrom, update.dateFrom) || this.#tripPoint.basePrice !== update.basePrice;
+    this.#handleDataChange(
+      UserAction.UPDATE_TRIPPOINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      update,
+    );
     this.#replaceFormToPoint();
     document.body.removeEventListener('keydown', this.#ecsKeyDownHandler);
   };
@@ -114,7 +123,14 @@ export default class TripPointPresenter {
   #handleRollupButtonClick = () => {
     this.#editFormComponent.reset(this.#tripPoint);
     this.#replaceFormToPoint();
-    document.body.removeEventListener('keydown', this.#ecsKeyDownHandler);
+  };
+
+  #handleDeleteClick = (tripPoint) => {
+    this.#handleDataChange(
+      UserAction.DELETE_TRIPPOINT,
+      UpdateType.MINOR,
+      tripPoint,
+    );
   };
 
 

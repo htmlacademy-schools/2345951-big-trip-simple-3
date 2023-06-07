@@ -1,6 +1,13 @@
 const FilterType = {
   EVERYTHING: 'everything',
-  FUTURE: 'future'
+  FUTURE: 'future',
+  PAST: 'past'
+};
+
+const FilterTypeDescriptions = {
+  [FilterType.EVERYTHING]: 'EVERYTHING',
+  [FilterType.PAST]: 'PAST',
+  [FilterType.FUTURE]: 'FUTURE',
 };
 
 const SortTypeForDrawing = {
@@ -19,4 +26,16 @@ const SortType = {
   OFFER: 'sort-offer'
 };
 
-export {SortType, FilterType, SortTypeForDrawing};
+const UserAction = {
+  UPDATE_TRIPPOINT: 'UPDATE_TRIPPOINT',
+  ADD_TRIPPOINT: 'ADD_TRIPPOINT',
+  DELETE_TRIPPOINT: 'DELETE_TRIPPOINT',
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+export {SortType, FilterTypeDescriptions, SortTypeForDrawing, UserAction, UpdateType, FilterType};
