@@ -174,7 +174,7 @@ const createEventItemFormTemplate = (eventPoint = {}) => {
 export default class NewItemFormView extends AbstractView {
 
   #tripPoint = null;
-  constructor(tripPoint) {
+  constructor({tripPoint}) {
     super();
     this.#tripPoint = tripPoint;
   }

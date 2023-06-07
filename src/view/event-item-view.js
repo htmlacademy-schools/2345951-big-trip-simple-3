@@ -56,23 +56,15 @@ const createEvenItemTemplate = (eventPoint) => {
 export default class EventItemView extends AbstractView {
 
   #tripPoint = null;
-  #handleEditClick = null;
 
-  constructor({tripPoint, onEditClick}) {
+  constructor({tripPoint}) {
     super();
     this.#tripPoint = tripPoint;
-    this.#handleEditClick = onEditClick;
 
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#editClickHandler);
   }
 
   get template() {
     return createEvenItemTemplate(this.#tripPoint);
   }
 
-  #editClickHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleEditClick();
-  };
 }
