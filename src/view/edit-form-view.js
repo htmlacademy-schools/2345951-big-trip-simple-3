@@ -3,33 +3,15 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { convertToBasicime } from '../utils/formatTime-Utils.js';
 import { pointTypes } from '../mock/const.js';
 
+import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.min.css';
+
 const BLANK_TRIPPOINT = {
   basePrice: 999,
   dateFrom: '2019-07-18T20:20:13.375Z',
   dateTo: '2019-07-18T21:40:13.375Z',
-  destination: {
-    id: 0,
-    description: 'default description',
-    name: 'home',
-    pictures: [
-      {
-        src: 'img/photos/1.jpg',
-        description: 'pic'
-      },
-      {
-        src: 'img/photos/2.jpg',
-        description: 'pic'
-      },
-      {
-        src: 'img/photos/3.jpg',
-        description: 'pic'
-      },
-      {
-        src: 'img/photos/4.jpg',
-        description: 'pic'
-      }
-    ]
-  },
+  destination: undefined,
   id: 0,
   offersIDs: [2, 4],
   type: 'flight'
@@ -76,9 +58,9 @@ function createEventDetailsTemplate(tripPoint, destination, offers) {
     </div>
   </section>
 
-  <section class="event__section  event__section--destination">
+  <section class="event__section  event__section--destination ${(destination) ? '' : 'visually-hidden'}">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${destination.description}</p>
+    <p class="event__destination-description">${(destination) ? destination.description : ''}</p>
     ${createDestinationDescriptionTemplate(destination)}
   </section>`;
 }
@@ -131,7 +113,7 @@ function createEditFormTemplate(tripPoint, destinations, offers, isEditForm) {
         <label class="event__label event__type-output" for="event-destination-${tripPoint.id}">
         ${capitalizeType(tripPoint.type)}
         </label>
-        <input class="event__input event__input--destination" id="event-destination-${tripPoint.id}" type="text" name="event-destination" value="${destination.name}" list="destination-list-${tripPoint.id}">
+        <input class="event__input event__input--destination" id="event-destination-${tripPoint.id}" type="text" name="event-destination" value="${(destination) ? destination.name : ''}" list="destination-list-${tripPoint.id}">
         <datalist id="destination-list-${tripPoint.id}">
           ${createDestinationList(destinations)}
         </datalist>
@@ -169,19 +151,36 @@ export default class EditFormView extends AbstractStatefulView {
   #destinations = null;
   #offers = null;
   #isEditForm = null;
+  #fromDatepicker = null;
+  #toDatepicker = null;
 
-  constructor({tripPoint = BLANK_TRIPPOINT, destinations, offers, onFormSubmit = () => (0), isEditForm = true}) {
+  constructor({tripPoint = BLANK_TRIPPOINT, destinations, offers, onFormSubmit = () => (0), onRollUpButton, isEditForm = true}) {
     super();
-    this._setState(EditFormView.parseTripPointToState(tripPoint));
+    this._setState(EditFormView.parseTripPointToState(tripPoint, offers));
 
     this.#destinations = destinations;
     this.#offers = offers;
     this.#isEditForm = isEditForm;
     this._callback.onFormSubmit = onFormSubmit;
+    this._callback.onRollUpButton = onRollUpButton;
 
     this._restoreHandlers();
   }
 
+  removeElement() {
+    super.removeElement();
+
+
+    if (this.#fromDatepicker) {
+      this.#fromDatepicker.destroy();
+      this.#fromDatepicker = null;
+    }
+
+    if (this.#toDatepicker) {
+      this.#toDatepicker.destroy();
+      this.#toDatepicker = null;
+    }
+  }
 
   get template() {
     return createEditFormTemplate(this._state, this.#destinations, this.#offers, this.#isEditForm);
@@ -189,7 +188,7 @@ export default class EditFormView extends AbstractStatefulView {
 
   reset(tripPoint) {
     this.updateElement(
-      EditFormView.parseTripPointToState(tripPoint),
+      EditFormView.parseTripPointToState(tripPoint, this.#offers),
     );
   }
 
@@ -202,16 +201,63 @@ export default class EditFormView extends AbstractStatefulView {
       .addEventListener('change', this.#destinationHandler);
     this.element.querySelector('.event__input--price')
       .addEventListener('input', this.#priceInputHandler);
-    // this.element.querySelector('.event__available-offers')
-    //   .addEventListener('change', this.#offersHandler);
+    this.element.querySelector('.event__available-offers')
+      .addEventListener('change', this.#offersHandler);
     if (this.#isEditForm) {
-      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formSubmitHandler);
+      this.element.querySelector('.event__save-btn').addEventListener('click', this.#formSubmitHandler);
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollUpButtonHandler);
     }
+    this.#setFromDatePicker();
+    this.#setToDatePicker();
+  }
+
+  #fromDateChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateFrom: userDate.toISOString(),
+    });
+    this.#toDatepicker.set('minDate', userDate);
+  };
+
+
+  #toDateChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dateTo: userDate.toISOString(),
+    });
+  };
+
+  #setFromDatePicker() {
+    this.#fromDatepicker = flatpickr(
+      this.element.querySelector(`#event-start-time-${this._state.id}`),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: convertToBasicime(this._state.dateFrom),
+        onChange: this.#fromDateChangeHandler,
+      },
+    );
+  }
+
+  #setToDatePicker() {
+    this.#toDatepicker = flatpickr(
+      this.element.querySelector(`#event-end-time-${this._state.id}`),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        defaultDate: convertToBasicime(this._state.dateTo),
+        minDate: convertToBasicime(this._state.dateFrom),
+        onChange: this.#toDateChangeHandler,
+      },
+    );
   }
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this._callback.onFormSubmit();
+    this._callback.onFormSubmit(EditFormView.parseStateToTripPoint(this._state));
+  };
+
+  #rollUpButtonHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.onRollUpButton();
   };
 
   #eventTypeHandler = (evt) => {
@@ -219,6 +265,7 @@ export default class EditFormView extends AbstractStatefulView {
     this.updateElement({
       type: evt.target.value,
       offersIDs: [],
+      currentTypeOffers: this.#offers.find((el) => el.type === evt.target.value).offers
     });
   };
 
@@ -236,24 +283,30 @@ export default class EditFormView extends AbstractStatefulView {
     });
   };
 
-  // #offersHandler = (evt) => {
-  //   evt.preventDefault();
-  //   const selectedTypeOffers = this.#offers.find((el) => el.type === this._state.type).offers;
-  //   const clickedOfferId = selectedTypeOffers.find((offer) => offer.title.split(' ').at(-1) === evt.target.name.split('-').at(-1)).id;
-  //   this._setState({
-  //     offersIDs: (this._state.offersIDs.includes(clickedOfferId)) ?
-  //       this._state.offersIDs.splice(this._state.offersIDs.indexOf(clickedOfferId), 1) : this._state.offersIDs.push(clickedOfferId)
-  //   });
-  // };
+  #offersHandler = (evt) => {
+    evt.preventDefault();
+    const clickedOfferId = this._state.currentTypeOffers.find((offer) => offer.title.split(' ').at(-1) === evt.target.name.split('-').at(-1)).id;
+    const newOffersIds = this._state.offersIDs.slice();
+    if (newOffersIds.includes(clickedOfferId)) {
+      newOffersIds.splice(newOffersIds.indexOf(clickedOfferId), 1);
+    } else {
+      newOffersIds.push(clickedOfferId);
+    }
+    this._setState({
+      offersIDs: newOffersIds
+    });
+  };
 
-  static parseTripPointToState(tripPoint) {
+  static parseTripPointToState(tripPoint, offers) {
     return {...tripPoint,
+      currentTypeOffers: offers.find((el) => el.type === tripPoint.type).offers
     };
   }
 
   static parseStateToTripPoint(state) {
     const task = {...state};
 
+    delete task.currentTypeOffers;
     return task;
   }
 }
