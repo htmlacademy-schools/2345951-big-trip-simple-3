@@ -1,5 +1,5 @@
-import {getDateYears, getItemFromItemsById} from '../utils';
-import {makeFirstLetterUpperCase} from '../utils';
+import {getDateYears, getItemFromItemsById} from '../utils/utils';
+import {makeFirstLetterUpperCase} from '../utils/utils';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';

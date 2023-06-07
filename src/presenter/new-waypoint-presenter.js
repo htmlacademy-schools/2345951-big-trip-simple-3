@@ -1,9 +1,9 @@
 import {render, RenderPosition} from '../render';
 import {UpdateType, UserAction} from '../const';
 
-import EditForm from '../view/edit-form';
+import EditForm from '../view/edit-form-view';
 import {remove} from '../framework/render';
-import {isEsc} from '../utils';
+import {isEsc} from '../utils/utils';
 
 
 export default class NewWaypointPresenter {
