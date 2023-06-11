@@ -1,25 +1,16 @@
 import AbstractView from '../framework/view/abstract-view';
-import {FilterType} from '../const';
 
-const NoTasksTextType = {
-  [FilterType.EVERYTHING]: 'Click New Event to create your first point',
-  [FilterType.FUTURE]: 'There are no future events now',
-  [FilterType.PAST]: 'There are no past events now',
-};
+const createNoPointsMessageTemplate = (text) => `<p class="trip-events__msg">${text}</p>`;
 
-function createNoWaypoitsMessageTemplate(filterType) {
-  return `<p class="trip-events__msg">${NoTasksTextType[filterType]}</p>`;
-}
+export default class NoWaypointsView extends AbstractView {
+  #text;
 
-export default class NoWaypointMessage extends AbstractView {
-  #filterType = null;
-
-  constructor({filterType}) {
+  constructor(text = 'Click New Event to create your first point') {
     super();
-    this.#filterType = filterType;
+    this.#text = text;
   }
 
   get template() {
-    return createNoWaypoitsMessageTemplate(this.#filterType);
+    return createNoPointsMessageTemplate(this.#text);
   }
 }
