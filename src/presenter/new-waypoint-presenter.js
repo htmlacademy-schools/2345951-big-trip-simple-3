@@ -22,19 +22,21 @@ export default class NewWaypointPresenter {
       return;
     }
 
-    this.#waypointsFormComponent = new EditFormView({
-      destinations,
-      offers,
-      onFormSubmit: this.#onSubmit,
-      onDeleteClick: this.#onDeleteClick,
-      onRollUpButton: this.#onDeleteClick,
-      isEditForm: false
-    });
+    try {
+      this.#waypointsFormComponent = new EditFormView({
+        destinations,
+        offers,
+        onFormSubmit: this.#onSubmit,
+        onDeleteClick: this.#onDeleteClick,
+        onRollUpButton: this.#onDeleteClick,
+        isEditForm: false
+      });
 
-    render(this.#waypointsFormComponent, this.#waypointsListContainer,
-      RenderPosition.AFTERBEGIN);
+      render(this.#waypointsFormComponent, this.#waypointsListContainer,
+        RenderPosition.AFTERBEGIN);
 
-    document.body.addEventListener('keydown', this.#ecsKeyHandler);
+      document.body.addEventListener('keydown', this.#ecsKeyHandler);
+    } catch (err) { /* */}
   };
 
   destroy() {
