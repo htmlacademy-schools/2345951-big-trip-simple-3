@@ -1,42 +1,31 @@
 import dayjs from 'dayjs';
-import {FilterType} from '../const';
 
 const EVENT_DATE_FORMAT = 'MMM D';
-const EVENT_TIME_FORMAT = 'H:mm';
-const EVENT_YEARS_FORMAT = 'DD/MM/YY HH:mm';
+const TIME_FORMAT = 'H:mm';
+const BASIC_DATE_FORMAT = 'DD/MM/YY HH:mm';
 
-const isEsc = (evt) => evt.key === 'Escape';
+export const convertToEventDateTime = (date) => date.substring(0, date.indexOf('T'));
+export const convertToEventDate = (date) => dayjs(date).format(EVENT_DATE_FORMAT);
+export const convertToDateTime = (date) => date.substring(0, date.indexOf('.'));
+export const convertToTime = (date) => dayjs(date).format(TIME_FORMAT);
+export const convertToBasicDate = (date) => dayjs(date).format(BASIC_DATE_FORMAT);
+export const compareDates = (a, b) => dayjs(a).isBefore(dayjs(b)) ? -1 : 1;
+export const isTripDateBeforeToday = (date) => dayjs(date).isBefore(dayjs(), 'D') || dayjs(date).isSame(dayjs(), 'D');
 
-const getItemFromItemsById = (items, id) => (items.find((item) => item.id === id));
 
-const getDateWithoutT = (dateStr) => dateStr.substring(0, dateStr.indexOf('T'));
-const getDateDayAndMo = (dateStr) => dayjs(dateStr).format(EVENT_DATE_FORMAT);
-const getDateWithT = (dateStr) => dateStr.substring(0, dateStr.lastIndexOf(':'));
-const getTime = (dateStr) => dayjs(dateStr).format(EVENT_TIME_FORMAT);
-const getDateYears = (date) => dayjs(date).format(EVENT_YEARS_FORMAT);
+export const compareTime = (a, b) => {
+  const aDate = dayjs(a);
+  const bDate = dayjs(b);
 
-const isDatesEqual = (date1, date2) => (!date1 && !date2) || dayjs(date1).isSame(date2, 'D');
-
-const makeFirstLetterUpperCase = (word) => word.charAt(0).toUpperCase() + word.slice(1);
-
-const isFuture = (date) => date && dayjs().isBefore(date, 'D');
-const isPast = (date) => date && dayjs().isAfter(date, 'D');
-
-const filter = {
-  [FilterType.FUTURE]: (waypoints) => waypoints.filter((waypoint) => isFuture(waypoint.dateFrom)),
-  [FilterType.EVERYTHING]: (waypoints) => waypoints,
-  [FilterType.PAST]: (waypoints) => waypoints.filter((waypoint) => isPast(waypoint.dateFrom)),
+  if (aDate.hour() !== bDate.hour()) {
+    return aDate.hour() - bDate.hour();
+  }
+  return aDate.minute() - bDate.minute();
 };
 
-export {
-  getDateWithoutT,
-  getDateDayAndMo,
-  getDateWithT,
-  getTime,
-  getItemFromItemsById,
-  getDateYears,
-  isEsc,
-  makeFirstLetterUpperCase,
-  isDatesEqual,
-  filter
-};
+export const sortByDay = (a, b) => compareDates(a.dateFrom, b.dateFrom);
+export const sortByTime = (a, b) => compareTime(a.dateFrom, b.dateFrom);
+export const sortByPrice = (a, b) => b.basePrice - a.basePrice;
+
+export const convertToUpperCase = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+export const convertToLowerCase = (str) => str.toLowerCase();

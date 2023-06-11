@@ -1,41 +1,56 @@
 import AbstractView from '../framework/view/abstract-view';
-import {SortType, SortTypeDescription} from '../const';
-import {isSelectedOption} from '../utils/sort';
+import {convertToLowerCase} from '../utils/utils';
 
-function createSortItemTemplate(sortType, currentSortType) {
-  return `
-  <div class="trip-sort__item  trip-sort__item--${sortType}">
-    <input id="${sortType}" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="${sortType}"  ${isSelectedOption(sortType)} ${(sortType === currentSortType ? 'checked' : '')}>
-    <label class="trip-sort__btn" for="${sortType}">${SortTypeDescription[sortType]}</label>
-  </div>`;
-}
+const createSortItemTemplate = (sortType, current) => (
+  `
+    <div class="trip-sort__item  trip-sort__item--${convertToLowerCase(sortType)}">
+      <input
+        id="sort-${convertToLowerCase(sortType)}"
+        class="trip-sort__input visually-hidden"
+        type="radio" name="trip-sort"
+        value="sort-${convertToLowerCase(sortType)}"
+        ${(['event', 'offers' ].includes(sortType) ? 'disabled' : '')}
+        ${sortType !== 'event' && sortType !== 'offers' && sortType === current ? 'checked' : ''}
+      >
+      <label class="trip-sort__btn" for="sort-${convertToLowerCase(sortType)}" data-sort-type="${sortType}">${sortType}</label>
+    </div>`
+);
 
-function createSortingTemplate(currentSortType) {
-  const sortItemsTemplate = Object.keys(SortType).map((sortType) => createSortItemTemplate(SortType[sortType], currentSortType)).join('');
-  return (`
+
+const createSortTemplate = (sorts, current) => `
   <form class="trip-events__trip-sort  trip-sort" action="#" method="get">
-    ${sortItemsTemplate}
-  </form>`
-  );
-}
+    ${Object.keys(sorts).map((sort) => createSortItemTemplate(sort, current)).join('')}
+  </form>
+`;
 
-export default class Sorting extends AbstractView {
-  #currentSortType = null;
-  #handleSortTypeChange = null;
+export default class SortView extends AbstractView {
+  #sorts = [];
+  #current;
 
-  constructor({currentSortType, onSortTypeChange}) {
+  constructor({sorts, current}) {
     super();
-    this.#currentSortType = currentSortType;
-    this.#handleSortTypeChange = onSortTypeChange;
-    this.element.addEventListener('change', this.#sortTypeChangeHandler);
+    this.#sorts = sorts;
+    this.#current = current;
   }
 
   get template() {
-    return createSortingTemplate(this.#currentSortType);
+    return createSortTemplate(this.#sorts, this.#current);
   }
 
+  changeCurrentType = (type) => {
+    this.#current = type;
+  };
+
+  setSortTypeChangeHandler = (callback) => {
+    this._callback.sortTypeChange = callback;
+    this.element.addEventListener('click', this.#sortTypeChangeHandler);
+  };
+
   #sortTypeChangeHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleSortTypeChange(evt.target.value);
+    if (evt.target.tagName !== 'LABEL' || ['event', 'offers' ].includes(evt.target.dataset.sortType)) {
+      return;
+    }
+
+    this._callback.sortTypeChange(evt.target.dataset.sortType);
   };
 }

@@ -1,44 +1,53 @@
-const FilterType = {
+import {isTripDateBeforeToday, sortByDay, sortByPrice, sortByTime} from './utils/utils';
+
+export const SORT_TYPE = {
+  DAY: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFERS: 'offers'
+};
+
+export const SORTS = {
+  [SORT_TYPE.DAY]: sortByDay,
+  [SORT_TYPE.EVENT]: undefined,
+  [SORT_TYPE.TIME]: sortByTime,
+  [SORT_TYPE.PRICE]: sortByPrice,
+  [SORT_TYPE.OFFERS]: undefined,
+};
+
+export const FILTER_TYPE = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
   PAST: 'past'
 };
 
-const FilterTypeDescriptions = {
-  [FilterType.EVERYTHING]: 'EVERYTHING',
-  [FilterType.PAST]: 'PAST',
-  [FilterType.FUTURE]: 'FUTURE',
+export const TRIP_TYPES = {
+  TAXI: 'taxi',
+  BUS: 'bus',
+  SHIP: 'ship',
+  DRIVE: 'drive',
+  FLIGHT: 'flight',
+  CHECK_IN: 'check-in',
+  SIGHTSEEING: 'sightseeing',
+  RESTAURANT: 'restaurant'
 };
 
-const SortType = {
-  DAY: 'day',
-  EVENT: 'event',
-  TIME: 'time',
-  PRICE: 'price',
-  OFFER: 'offer'
+export const USER_ACTION = {
+  UPDATE_TRIPPOINT: 'UPDATE_TRIPPOINT',
+  ADD_TRIPPOINT: 'ADD_TRIPPOINT',
+  DELETE_TRIPPOINT: 'DELETE_EVENT',
 };
 
-const SortTypeDescription = {
-  [SortType.DAY]: 'Day',
-  [SortType.EVENT]: 'Event',
-  [SortType.TIME]: 'Time',
-  [SortType.PRICE]: 'Price',
-  [SortType.OFFER]: 'Offer'
-};
-
-const UserAction = {
-  UPDATE_WAYPOINT: 'UPDATE_WAYPOINT',
-  ADD_WAYPOINT: 'ADD_WAYPOINT',
-  DELETE_WAYPOINT: 'DELETE_WAYPOINT',
-};
-
-const UpdateType = {
+export const UPDATE_TYPE = {
+  INIT: 'INIT',
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
-  INIT: 'INIT',
 };
 
-const pointTypes = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
-
-export {pointTypes, FilterType, SortType, UserAction, UpdateType, SortTypeDescription, FilterTypeDescriptions};
+export const filters = {
+  [FILTER_TYPE.FUTURE]: (tripPoints) => tripPoints.filter((tripPoint) => !isTripDateBeforeToday(tripPoint.dateFrom)),
+  [FILTER_TYPE.EVERYTHING]: (tripPoints) => tripPoints,
+  [FILTER_TYPE.PAST]: (tripPoints) => tripPoints.filter((tripPoint) => isTripDateBeforeToday(tripPoint.dateTo)),
+};

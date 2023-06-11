@@ -7,8 +7,8 @@ const Method = {
   DELETE: 'DELETE'
 };
 
-export default class WaypointsApiService extends ApiService {
-  get waypoints() {
+export class WaypointsApiService extends ApiService {
+  get tripEvents() {
     return this._load({url: 'points'})
       .then(ApiService.parseResponse);
   }
@@ -23,56 +23,38 @@ export default class WaypointsApiService extends ApiService {
       .then(ApiService.parseResponse);
   }
 
-  async updateWaypoint(waypoint) {
-    const response = await this._load({
-      url: `points/${waypoint.id}`,
-      method: Method.PUT,
-      body: JSON.stringify(this.#adaptToServer(waypoint)),
-      headers: new Headers({'Content-Type': 'application/json'}),
-    });
+  updateTripEvent = async (tripPoint) => await ApiService.parseResponse(await this._load({
+    url: `points/${tripPoint.id}`,
+    method: Method.PUT,
+    body: JSON.stringify(this.#adaptToServer(tripPoint)),
+    headers: new Headers({'Content-Type': 'application/json'}),
+  }));
 
-    const parsedResponse = await ApiService.parseResponse(response);
+  addTripEvent = async (tripPoint) => await ApiService.parseResponse(await this._load({
+    url: 'points',
+    method: Method.POST,
+    body: JSON.stringify(this.#adaptToServer(tripPoint)),
+    headers: new Headers({'Content-Type': 'application/json'}),
+  }));
 
-    return parsedResponse;
-  }
+  deleteTripEvent = async (tripPoint) => await this._load({
+    url: `points/${tripPoint.id}`,
+    method: Method.DELETE,
+  });
 
-
-  async addWaypoint(waypoint) {
-    const response = await this._load({
-      url: 'points',
-      method: Method.POST,
-      body: JSON.stringify(this.#adaptToServer(waypoint)),
-      headers: new Headers({'Content-Type': 'application/json'}),
-    });
-
-    const parsedResponse = await ApiService.parseResponse(response);
-
-    return parsedResponse;
-  }
-
-  async deleteWaypoint(waypoint) {
-    const response = await this._load({
-      url: `points/${waypoint.id}`,
-      method: Method.DELETE,
-    });
-
-    return response;
-  }
-
-  #adaptToServer(waypoint) {
-    const adaptedWaypoint = {
-      ...waypoint,
-      'date_from': (waypoint.dateFrom) ? new Date(waypoint.dateFrom).toISOString() : new Date().toISOString,
-      'date_to': (waypoint.dateFrom) ? new Date(waypoint.dateTo).toISOString() : new Date().toISOString,
-      'base_price': Number(waypoint.basePrice),
-      'offers': waypoint.offersIDs
+  #adaptToServer = (tripPoint) => {
+    const adaptedTripEvent = {
+      ...tripPoint,
+      'date_from': (tripPoint.dateFrom) ? new Date(tripPoint.dateFrom).toISOString() : new Date().toISOString,
+      'date_to': (tripPoint.dateTo) ? new Date(tripPoint.dateTo).toISOString() : new Date().toISOString,
+      'base_price': Number(tripPoint.basePrice),
+      'offers': tripPoint.offersIDs
     };
 
-    delete adaptedWaypoint.dateFrom;
-    delete adaptedWaypoint.dateTo;
-    delete adaptedWaypoint.basePrice;
-    delete adaptedWaypoint.offersIDs;
-
-    return adaptedWaypoint;
-  }
+    delete adaptedTripEvent.dateFrom;
+    delete adaptedTripEvent.dateTo;
+    delete adaptedTripEvent.basePrice;
+    delete adaptedTripEvent.offersIDs;
+    return adaptedTripEvent;
+  };
 }

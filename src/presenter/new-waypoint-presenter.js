@@ -1,44 +1,70 @@
-import {render, RenderPosition} from '../render';
-import {UpdateType, UserAction} from '../const';
 
-import EditForm from '../view/edit-form-view';
-import {remove} from '../framework/render';
-import {isEsc} from '../utils/utils';
+import {remove, render, RenderPosition} from '../framework/render';
+import EditFormView from '../view/edit-form-view';
+import {UPDATE_TYPE, USER_ACTION} from '../const';
 
 
 export default class NewWaypointPresenter {
-  #handleDataChange = null;
-  #handleDestroy = null;
-  #waypointListContainer = null;
-  #waypointEditComponent = null;
+  #handleChange;
+  #handelDestroy;
+  #waypointsListContainer;
+  #waypointsFormComponent;
 
-  constructor({waypointListContainer, onDataChange, onDestroy}) {
-    this.#waypointListContainer = waypointListContainer;
-    this.#handleDataChange = onDataChange;
-    this.#handleDestroy = onDestroy;
+
+  constructor({tripEventsListContainer, onDataChange, onDestroy}) {
+    this.#waypointsListContainer = tripEventsListContainer;
+    this.#handleChange = onDataChange;
+    this.#handelDestroy = onDestroy;
   }
 
-  init(destinations, offers) {
-    if (this.#waypointEditComponent !== null) {
+  init = ({destinations, offers}) => {
+    if (this.#waypointsFormComponent !== undefined) {
       return;
     }
 
-    this.#waypointEditComponent = new EditForm({
-      destinations: destinations,
-      offers: offers,
-      onSubmit: this.#handleFormSubmit,
-      onDeleteClick: this.#handleDeleteClick,
+    this.#waypointsFormComponent = new EditFormView({
+      destinations,
+      offers,
+      onFormSubmit: this.#onSubmit,
+      onDeleteClick: this.#onDeleteClick,
+      onRollUpButton: this.#onDeleteClick,
       isEditForm: false
     });
 
-    render(this.#waypointEditComponent, this.#waypointListContainer,
+    render(this.#waypointsFormComponent, this.#waypointsListContainer,
       RenderPosition.AFTERBEGIN);
 
-    document.body.addEventListener('keydown', this.#ecsKeyDownHandler);
+    document.body.addEventListener('keydown', this.#ecsKeyHandler);
+  };
+
+  destroy() {
+    if (this.#waypointsFormComponent === null) {
+      return;
+    }
+
+    this.#handelDestroy();
+
+    remove(this.#waypointsFormComponent);
+    this.#waypointsFormComponent = null;
+
+    document.body.removeEventListener('keydown', this.#ecsKeyHandler);
   }
 
+  #onSubmit = (tripEvent) => {
+    this.#handleChange(
+      USER_ACTION.ADD_TRIPPOINT,
+      UPDATE_TYPE.MINOR,
+      this.#deleteId(tripEvent)
+    );
+    this.destroy();
+  };
+
+  #onDeleteClick = () => {
+    this.destroy();
+  };
+
   setSaving() {
-    this.#waypointEditComponent.updateElement({
+    this.#waypointsFormComponent.updateElement({
       isDisabled: true,
       isSaving: true,
     });
@@ -46,53 +72,25 @@ export default class NewWaypointPresenter {
 
   setAborting() {
     const resetFormState = () => {
-      this.#waypointEditComponent.updateElement({
+      this.#waypointsFormComponent.updateElement({
         isDisabled: false,
-        isSavinf: false,
+        isSaving: false,
         isDeleting: false,
       });
     };
 
-    this.#waypointEditComponent.shake(resetFormState);
+    this.#waypointsFormComponent.shake(resetFormState);
   }
 
-  destroy() {
-    if (this.#waypointEditComponent === null) {
-      return;
-    }
-
-    this.#handleDestroy();
-
-    remove(this.#waypointEditComponent);
-    this.#waypointEditComponent = null;
-
-    document.body.removeEventListener('keydown', this.#ecsKeyDownHandler);
-  }
-
-
-  #ecsKeyDownHandler = (evt) => {
-    if (isEsc(evt)) {
+  #ecsKeyHandler = (evt) => {
+    if (evt.key === 'Escape') {
       evt.preventDefault();
       this.destroy();
     }
   };
 
-  #handleFormSubmit = (waypoint) => {
-    this.#handleDataChange(
-      UserAction.ADD_WAYPOINT,
-      UpdateType.MINOR,
-
-      this.#deleteId(waypoint)
-    );
+  #deleteId = (tripEvent) => {
+    delete tripEvent.id;
+    return tripEvent;
   };
-
-  #handleDeleteClick = () => {
-    this.destroy();
-  };
-
-  #deleteId = (waypoint) => {
-    delete waypoint.id;
-    return waypoint;
-  };
-
 }

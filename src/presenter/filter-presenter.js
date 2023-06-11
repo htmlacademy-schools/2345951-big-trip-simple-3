@@ -1,44 +1,41 @@
-import {FilterType, FilterTypeDescriptions, UpdateType} from '../const';
-import Filters from '../view/filter-view';
-import {render} from '../render';
-import {remove, replace} from '../framework/render';
-import {filter} from '../utils/utils';
+import {filters, UPDATE_TYPE} from '../const';
+import FilterView from '../view/filter-view';
+import {remove, render, replace} from '../framework/render';
+import {FILTER_TYPE} from '../const';
+
 
 export default class FilterPresenter {
-  #filterContainer = null;
-  #modelFilter = null;
-  #modelWaypoints = null;
-  #filterComponent = null;
+  #filterContainer;
+  #filterModel;
+  #waypointEventsModel;
+  #filterComponent;
 
-  constructor({filterContainer, modelFilter, modelWaypoints}) {
+  constructor({filterContainer, filterModel, tripEventModel}) {
     this.#filterContainer = filterContainer;
-    this.#modelFilter = modelFilter;
-    this.#modelWaypoints = modelWaypoints;
+    this.#filterModel = filterModel;
+    this.#waypointEventsModel = tripEventModel;
 
-    this.#modelWaypoints.addObserver(this.#handleModelEvent);
-    this.#modelFilter.addObserver(this.#handleModelEvent);
+    this.#waypointEventsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get filters() {
-    const waypoints = this.#modelWaypoints.waypoints;
-    return [FilterType.EVERYTHING, FilterType.FUTURE, FilterType.PAST].map((type) => ({
+    return [FILTER_TYPE.EVERYTHING, FILTER_TYPE.FUTURE, FILTER_TYPE.PAST].map((type) => ({
       type,
-      name: FilterTypeDescriptions[type],
-      count: filter[type](waypoints).length
+      count: filters[type](this.#waypointEventsModel.tripEvents).length
     }));
   }
 
   init() {
-    const filters = this.filters;
     const prevFilterComponent = this.#filterComponent;
 
-    this.#filterComponent = new Filters({
-      filters,
-      currentFilterType: this.#modelFilter.filter,
-      onFilterTypeChange: this.#handleFilterTypeChange
+    this.#filterComponent = new FilterView({
+      filters: this.filters,
+      currentFilter: this.#filterModel.filter,
+      onFilterChange: this.#handleFilterTypeChange
     });
 
-    if (prevFilterComponent === null) {
+    if (!prevFilterComponent) {
       render(this.#filterComponent, this.#filterContainer);
       return;
     }
@@ -52,10 +49,9 @@ export default class FilterPresenter {
   };
 
   #handleFilterTypeChange = (filterType) => {
-    if (this.#modelFilter.filter === filterType) {
+    if (this.#filterModel.filter === filterType) {
       return;
     }
-
-    this.#modelFilter.setFilter(UpdateType.MAJOR, filterType);
+    this.#filterModel.setFilter(UPDATE_TYPE.MAJOR, filterType);
   };
 }
